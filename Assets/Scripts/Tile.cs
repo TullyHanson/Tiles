@@ -6,21 +6,25 @@ public class Tile : MonoBehaviour {
     public Camera cam;
     public float tileWidth;
     public float halfTileWidth;
+    // Binary semaphores controlling Tile movement
     public bool isFalling = false;
     public bool isShiftingUp = false;
-    public bool waitingToBeDeleted = false;
-    AudioClip rotateSound;
 
+    public bool waitingToBeDeleted = false;
+
+    // This tiles current position
     public int arrayPosX = 0;
     public int arrayPosY = 0;
 
     // Order defined as { Top, Right, Bottom, Left }
+    // Holds the int representation of color for this tile
     public int[] colorArray = new int[4];
 
+    // Holds the sprites that correspond to each color
     public Sprite[] availableSprites;
 
-    // Use this for initialization
-    void Start () {
+    void Start ()
+    {
         if (cam == null)
             cam = Camera.main;
         tileWidth = transform.localScale.x;
@@ -28,25 +32,22 @@ public class Tile : MonoBehaviour {
 
         GenerateTileColor();
 
-
-        // Very first shift bringing the tile on screen. Only upwards shift called by the tile itself.
+        /* Very first shift bringing the tile on screen. 
+         This is the only upwards shift called by the tile itself,
+         rest of them are controlled by the Grid. 
+        */
         StartCoroutine(ShiftUp());
     }
 
-    void OnMouseOver()
-    {    
-    }
-
+    // Generates the random colors for a tile
     void GenerateTileColor()
     {
-        string currentColor = "";
+        // Pick an int representing a color for each part of the tile
         for (int i = 0; i < 4; i++)
-        {
             colorArray[i] = Random.Range(0, 4);
-            currentColor = currentColor + colorArray[i] + " ";
-        }
         
         SpriteRenderer[] childrenComps = this.GetComponentsInChildren<SpriteRenderer>();
+        // Assign sprites based on the colors picked above
         for (int i = 1; i < 5; i++)
             childrenComps[i].sprite = availableSprites[colorArray[i-1]];
     }
@@ -57,11 +58,14 @@ public class Tile : MonoBehaviour {
         StartCoroutine(Rotate90DegreeCW());
     }
 
+    // Shift the tiles position up graphically
     public IEnumerator ShiftUp()
     {
         isShiftingUp = true;
         Vector3 target = new Vector3(transform.position.x, transform.position.y + tileWidth, transform.position.z);
         float speed = 1.0f;
+
+        // Increase the tiles Y position over a given amount of time
         while (transform.position != target)
         {
             float step = speed * Time.deltaTime;
